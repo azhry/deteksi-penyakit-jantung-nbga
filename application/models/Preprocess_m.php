@@ -80,32 +80,32 @@ class Preprocess_m extends MY_Model
 		}
 	}
 
-	private function encode_age($age)
+	public function encode_age($age)
 	{
 		return $age > 60 ? 1 : 0;
 	}
 
-	private function encode_trestbps($trestbps)
+	public function encode_trestbps($trestbps)
 	{
 		return $trestbps > 130 ? 1 : 0;
 	}
 
-	private function encode_thalach($thalach)
+	public function encode_thalach($thalach)
 	{
 		return $thalach > 150 ? 1 : 0;
 	}
 
-	private function encode_oldpeak($oldpeak)
+	public function encode_oldpeak($oldpeak)
 	{
 		return $oldpeak < 3 ? 1 : 0;
 	}
 
-	private function encode_chol($chol)
+	public function encode_chol($chol)
 	{
 		return $chol > 200 ? 1 : 0;
 	}
 
-	private function encode_num($num)
+	public function encode_num($num)
 	{
 		return $num > 0 ? 1 : 0;
 	}
@@ -124,5 +124,31 @@ class Preprocess_m extends MY_Model
 		$query = $this->db->query($sql);
 		$result = $query->row_array();
 		return $result[$attr];
+	}
+
+	public function get_data($split_ratio)
+	{
+		$data = $this->get();
+		$c_data = count($data);
+		$c_train_data = (int)($split_ratio * $c_data);
+		
+		$this->db->select('*');
+		$this->db->from($this->data['table_name']);
+		$this->db->limit($c_train_data, 0);
+		$query = $this->db->get();
+		$res['training'] = $query->result();
+		
+		$c_test_data = $c_data - $c_train_data;
+
+		$this->db->select('*');
+		$this->db->from($this->data['table_name']);
+		$this->db->limit($c_test_data, $c_train_data);
+		$query = $this->db->get();
+		$res['testing'] = $query->result();
+
+		$this->session->set_userdata('train_data', $res['training']);
+		$this->session->set_userdata('test_data', $res['testing']);
+
+		return $res;
 	}
 }
