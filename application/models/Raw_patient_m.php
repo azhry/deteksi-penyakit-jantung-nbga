@@ -29,7 +29,12 @@ class Raw_patient_m extends MY_Model
 			$this->load->model('attribute_m');
 			$fields = $this->attribute_m->get();
 
+			$this->load->model('preprocess_m');
+
+			$this->db->query('SET foreign_key_checks = 0');
+			$this->preprocess_m->delete_all();
 			$this->delete_all();
+			$this->db->query('SET foreign_key_checks = 1');
 
 			if ($file = fopen($upload_path . '/' . $file_name, 'r'))
 			{

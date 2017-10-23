@@ -105,7 +105,7 @@ class MY_Model extends CI_Model
 
 	public function delete_all()
 	{
-		return $this->db->empty_table($this->data['table_name']);
+		return $this->db->truncate($this->data['table_name']);
 	}
 
 	public function delete($pk)

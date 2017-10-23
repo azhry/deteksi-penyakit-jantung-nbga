@@ -18,19 +18,18 @@ class User extends MY_Controller
 			$this->load->model('raw_patient_m');
 			$this->raw_patient_m->import($file_name, 'file');
 
-			$this->load->model('preprocess_m');
-			$this->preprocess_m->execute();
+			$response = $this->raw_patient_m->get();
+			echo json_encode($response);
+			exit;
 		}
 
-		if ($this->POST('train'))
+		if ($this->POST('preprocess'))
 		{
 			$this->load->model('preprocess_m');
-			$data = $this->preprocess_m->get_data(0.7);
-			$this->load->model('naive_bayes_m');
-			$this->naive_bayes_m->set_validation_data($data['training'], $data['testing']);
-			$this->naive_bayes_m->train();
+			$this->preprocess_m->execute();
 
-			redirect('user');
+			$response = $this->preprocess_m->get();
+			echo json_encode($response);
 			exit;
 		}
 
@@ -39,37 +38,109 @@ class User extends MY_Controller
 		$this->template($this->data);
 	}
 
+	public function train()
+	{
+		$this->load->model('attribute_m');
+
+		if ($this->POST('train'))
+		{
+			$response['error'] = false;
+
+			$split_ratio = $this->POST('split_ratio');
+			if (!isset($split_ratio))
+			{
+				$response['error'] = true;
+				echo json_encode($response);
+				exit;
+			}
+
+			$this->load->model('preprocess_m');
+			$data = $this->preprocess_m->get_data($split_ratio);
+			$this->load->model('naive_bayes_m');
+			$this->naive_bayes_m->set_validation_data($data['training'], $data['testing']);
+			$this->naive_bayes_m->train();
+
+			$this->load->model('class_prior_m');
+			$response['prior'] = $this->class_prior_m->get();
+
+			$this->load->model('attribute_likelihood_m');
+			$response['likelihood_pos'] = $this->attribute_likelihood_m->get_likelihood(['class' => 1]);
+			$response['likelihood_neg'] = $this->attribute_likelihood_m->get_likelihood(['class' => 0]);
+
+			echo json_encode($response);
+			exit;
+		}
+
+		$this->data['title'] 	= 'Train Data' . $this->title;
+		$this->data['content']	= 'train_data';
+		$this->template($this->data);
+	}
+
 	public function test()
 	{
-		// $this->load->model('naive_bayes_m');
-		// $accuracy = $this->naive_bayes_m->test();
-		// echo (number_format($accuracy, 4) * 100) . '%';
-		$this->load->model('genetic_algorithm_m');
-		$this->genetic_algorithm_m->set_params(13, 0.01, 1000000, 5, ['set' => true, 'fitness' => 0.9]);
-		$this->genetic_algorithm_m->execute();
-		
+		if ($this->POST('test'))
+		{
+			$this->load->model('naive_bayes_m');
+			$response['accuracy'] = $this->naive_bayes_m->test();
+			echo json_encode($response);
+			exit;
+		}
 
-		// $data = [
-		// 	'age' 		=> 61,
-		// 	'sex'		=> 0,
-		// 	'cp'		=> 2,
-		// 	'trestbps'	=> 131,
-		// 	'chol'		=> 201,
-		// 	'fbs'		=> 0,
-		// 	'restecg'	=> 2,
-		// 	'thalach'	=> 151,
-		// 	'exang'		=> 0,
-		// 	'oldpeak'	=> 2,
-		// 	'slope'		=> 2,
-		// 	'ca'		=> 2,
-		// 	'thal'		=> 6
-		// ];
+		if ($this->POST('optimize'))
+		{
+			$response['error'] = false;
 
-		// $this->load->model('naive_bayes_m');
-		// $class = $this->naive_bayes_m->classify($data);
-		// arsort($class);
-		// $this->dump($class);
-		// echo '<h3>Accuracy</h3>';
-		// echo ($this->naive_bayes_m->test() * 100) . '%';
+			$mutation_rate 		= $this->POST('mutation_rate');
+			$num_generations	= $this->POST('num_generations');
+			$num_populations	= $this->POST('num_populations');
+
+			if (!isset($mutation_rate, $num_populations, $num_generations))
+			{
+				$response['error'] = true;
+				echo json_encode($response);
+				exit;
+			}
+
+			$set_criteria = $this->POST('set_criteria');
+			if (!$set_criteria or empty($set_criteria))
+			{
+				$set_criteria = ['set' => false];
+			}
+			else
+			{
+				$set_criteria = ['set' => true, 'fitness' => $set_criteria];
+			}
+
+			$this->load->model('genetic_algorithm_m');
+			$this->genetic_algorithm_m->set_params($mutation_rate, $num_generations, $num_populations, $set_criteria);
+			$response['fittest_chromosomes'] = $this->genetic_algorithm_m->execute();
+			// $fitness = 0;
+			$genes = $response['fittest_chromosomes'][count($response['fittest_chromosomes']) - 1]['chromosomes'];
+			// foreach ($response['fittest_chromosomes'] as $chromosome)
+			// {
+			// 	if ($chromosome['fitness'] > $fitness)
+			// 	{
+			// 		$fitness = $chromosome['fitness'];
+			// 		$genes = $chromosome['chromosomes'];
+			// 	}
+			// }
+
+			$this->load->model('attribute_m');
+			for ($i = 0; $i < count($genes); $i++)
+			{
+				$attr = $this->attribute_m->get_row(['id_attribute' => ($i + 1)]);
+				if ($attr)
+				{
+					$this->attribute_m->update($attr->id_attribute, ['used' => $genes[$i]]);
+				}
+			}
+
+			echo json_encode($response);
+			exit;
+		}
+
+		$this->data['title'] 	= 'Test Data' . $this->title;
+		$this->data['content']	= 'test_data';
+		$this->template($this->data);
 	}
 }

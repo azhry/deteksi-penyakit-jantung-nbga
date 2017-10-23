@@ -17,9 +17,9 @@ class Genetic_algorithm_m extends MY_Model
 		$this->data['primary_key']	= 'id_attribute';
 	}
 
-	public function set_params($chromosome_length, $mutation_rate, $num_generations, $num_populations, $stopping_criteria = ['set' => false])
+	public function set_params($mutation_rate, $num_generations, $num_populations, $stopping_criteria = ['set' => false])
 	{
-		$this->chromosome_length 	= $chromosome_length;
+		$this->chromosome_length 	= 13;
 		$this->mutation_rate 		= $mutation_rate;
 		$this->num_generations 		= $num_generations;
 		$this->num_populations 		= $num_populations;
@@ -29,6 +29,8 @@ class Genetic_algorithm_m extends MY_Model
 	public function execute()
 	{
 		$computed_population = [];
+		$fittest_chromosomes = [];
+		
 		for ($i = 0; $i < $this->num_generations; $i++)
 		{
 			$this->initialize_population();
@@ -42,14 +44,16 @@ class Genetic_algorithm_m extends MY_Model
 			}
 
 			array_multisort($arr, SORT_DESC, $computed_population);
-			echo '<h3>Fittest Chromosome at Generation ' . ($i + 1) . '</h3>';
-			echo implode(' ', $computed_population[0]['chromosomes']) . ' - ' . (number_format($computed_population[0]['fitness'], 4) * 100) . '%<br>';
+			
+			$fittest_chromosomes []= $computed_population[0];
 			if ($this->stopping_criteria['set'] == true)
 			{
 				if ($computed_population[0]['fitness'] >= $this->stopping_criteria['fitness'])
 					break;
 			}
 		}
+
+		return $fittest_chromosomes;
 	}
 
 	private function initialize_population()
