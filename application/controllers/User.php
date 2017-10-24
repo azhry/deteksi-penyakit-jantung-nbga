@@ -82,6 +82,7 @@ class User extends MY_Controller
 		{
 			$this->load->model('naive_bayes_m');
 			$response['accuracy'] = $this->naive_bayes_m->test();
+			$response['cm'] = $this->naive_bayes_m->get_c_matrix();
 			echo json_encode($response);
 			exit;
 		}
@@ -125,16 +126,22 @@ class User extends MY_Controller
 			// 	}
 			// }
 
+			$allele = [];
 			$this->load->model('attribute_m');
 			for ($i = 0; $i < count($genes); $i++)
 			{
 				$attr = $this->attribute_m->get_row(['id_attribute' => ($i + 1)]);
 				if ($attr)
 				{
+					if ($genes[$i] == 1)
+					{
+						$allele []= $attr;
+					}
 					$this->attribute_m->update($attr->id_attribute, ['used' => $genes[$i]]);
 				}
 			}
 
+			$response['allele'] = $allele;
 			echo json_encode($response);
 			exit;
 		}

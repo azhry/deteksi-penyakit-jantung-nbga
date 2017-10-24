@@ -83,9 +83,11 @@ class Genetic_algorithm_m extends MY_Model
 				}
 			}
 			$accuracy = $this->naive_bayes_m->test($filter_attr);
+			$c_matrix = $this->naive_bayes_m->get_c_matrix();
 			$computed_population []= [
 				'chromosomes'	=> $this->chromosomes[$i],
-				'fitness'		=> $accuracy
+				'fitness'		=> $accuracy,
+				'cm'			=> $c_matrix
 			];
 		}
 		return $computed_population;

@@ -6,6 +6,11 @@ class Naive_bayes_m extends MY_Model
 	private static $train_data;
 	private static $test_data;
 
+	private $precision_pos;
+	private $precision_neg;
+	private $recall_pos;
+	private $recall_neg;
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -14,12 +19,26 @@ class Naive_bayes_m extends MY_Model
 		
 		self::$train_data 	= $this->session->userdata('train_data');
 		self::$test_data 	= $this->session->userdata('test_data');
+
+		$this->precision_pos 	= 0;
+		$this->precision_neg 	= 0;
+		$this->recall_pos		= 0;
+		$this->recall_neg		= 0;
 	}
 
 	public function set_validation_data($train_data, $test_data)
 	{
 		self::$train_data 	= $train_data;
 		self::$test_data 	= $test_data;
+	}
+
+	public function get_c_matrix()
+	{
+		$data['precision_pos'] 	= $this->precision_pos;
+		$data['precision_neg'] 	= $this->precision_neg;
+		$data['recall_pos']		= $this->recall_pos;
+		$data['recall_neg']		= $this->recall_neg;
+		return $data;
 	}
 
 	public function train()
@@ -43,7 +62,10 @@ class Naive_bayes_m extends MY_Model
 		$this->load->model('preprocess_m');
 		$data = self::$test_data;
 		$total = count($data);
-		$true = 0;
+		$cm['tp'] = 0;
+		$cm['tn'] = 0;
+		$cm['fp'] = 0;
+		$cm['fn'] = 0;
 		foreach ($data as $row)
 		{
 			$row = (array)$row;
@@ -61,11 +83,33 @@ class Naive_bayes_m extends MY_Model
 
 			if ($class == $row['num'])
 			{
-				$true++;
+				if ($class == 1)
+				{
+					$cm['tp']++;
+				}
+				else
+				{
+					$cm['tn']++;
+				}
+			}
+			else
+			{
+				if ($class == 1)
+				{
+					$cm['fp']++;
+				}
+				else
+				{
+					$cm['fn']++;
+				}
 			}
 		}
+		$this->precision_pos 	= ($cm['tp'] + $cm['fp']) > 0 ? $cm['tp'] / ($cm['tp'] + $cm['fp']) : 0;
+		$this->precision_neg 	= ($cm['tn'] + $cm['fn']) > 0 ? $cm['tn'] / ($cm['tn'] + $cm['fn']) : 0;
+		$this->recall_pos		= ($cm['tp'] + $cm['fn']) > 0 ? $cm['tp'] / ($cm['tp'] + $cm['fn']) : 0;
+		$this->recall_neg		= ($cm['tn'] + $cm['fp']) > 0 ? $cm['tn'] / ($cm['tn'] + $cm['fp']) : 0;
 
-		$accuracy = $true / $total;
+		$accuracy = ($cm['tp'] + $cm['tn']) / $total;
 		return $accuracy;
 	}
 

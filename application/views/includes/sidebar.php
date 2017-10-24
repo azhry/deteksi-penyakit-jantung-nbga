@@ -7,9 +7,9 @@
                     <img src="<?= base_url('assets/adminbsb') ?>/images/user.png" width="48" height="48" alt="User" />
                 </div>
                 <div class="info-container">
-                    <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">John Doe</div>
-                    <div class="email">john.doe@example.com</div>
-                    <div class="btn-group user-helper-dropdown">
+                    <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Garox Asmoking</div>
+                    <div class="email">seepzeeblogi@gmail.com</div>
+                    <!-- <div class="btn-group user-helper-dropdown">
                         <i class="material-icons" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">keyboard_arrow_down</i>
                         <ul class="dropdown-menu pull-right">
                             <li><a href="javascript:void(0);"><i class="material-icons">person</i>Profile</a></li>
@@ -20,7 +20,7 @@
                             <li role="seperator" class="divider"></li>
                             <li><a href="<?= base_url('index.php/pegawai/logout') ?>"><i class="material-icons">input</i>Sign Out</a></li>
                         </ul>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <!-- #User Info -->
@@ -29,24 +29,24 @@
                 <ul class="list">
                     <li class="header">MAIN NAVIGATION</li>
                     <li class="active">
-                        <a href="index.html">
+                        <a href="<?= base_url('user') ?>">
                             <i class="material-icons">home</i>
-                            <span>Home</span>
+                            <span>ETL</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/typography.html">
+                        <a href="<?= base_url('user/train') ?>">
                             <i class="material-icons">text_fields</i>
-                            <span>Typography</span>
+                            <span>Train Model</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/helper-classes.html">
+                        <a href="<?= base_url('user/test') ?>">
                             <i class="material-icons">layers</i>
-                            <span>Helper Classes</span>
+                            <span>Test Model</span>
                         </a>
                     </li>
-                    <li>
+                    <!-- <li>
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">widgets</i>
                             <span>Widgets</span>
@@ -359,7 +359,7 @@
                             <i class="material-icons col-light-blue">donut_large</i>
                             <span>Information</span>
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
             <!-- #Menu -->

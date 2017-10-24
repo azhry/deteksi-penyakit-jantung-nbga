@@ -23,6 +23,31 @@
 								<canvas id="myChart" width="600" height="600"></canvas>
 							</div>
 						</div>
+						<div class="row">
+							<div class="col-md-12">
+								<table class="table table-hover table-striped">
+									<thead>
+										<tr>
+											<th>Label</th>
+											<th>Precision</th>
+											<th>Recall</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>+</td>
+											<td id="precision_pos"></td>
+											<td id="recall_pos"></td>
+										</tr>
+										<tr>
+											<td>-</td>
+											<td id="precision_neg"></td>
+											<td id="recall_neg"></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 					<div class="col-md-6">
 						<h3>Optimize Attribute</h3>
@@ -68,6 +93,50 @@
 								<canvas id="myLineChart" width="600" height="600"></canvas>
 							</div>
 						</div>
+						<div class="row">
+							<div class="col-md-8">
+								<table class="table table-hover table-striped">
+									<thead>
+										<tr>
+											<th>Label</th>
+											<th>Precision</th>
+											<th>Recall</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>+</td>
+											<td id="optimized_precision_pos"></td>
+											<td id="optimized_recall_pos"></td>
+										</tr>
+										<tr>
+											<td>-</td>
+											<td id="optimized_precision_neg"></td>
+											<td id="optimized_recall_neg"></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-8">
+								<h3>Selected Attribute</h3>
+								<table class="table table-hover table-striped">
+									<thead>
+										<tr>
+											<th>No.</th>
+											<th>Attribute</th>
+										</tr>
+									</thead>
+									<tbody id="selected_attribute">
+										<tr>
+											<td></td>
+											<td></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -97,6 +166,11 @@
 				var json = $.parseJSON(response);
 				nb = json.accuracy * 100;
 				display_bar_chart(nb, nbga);
+				var cm = json.cm;
+				$('#precision_pos').text((cm.precision_pos * 100).toPrecision(4) + '%');
+				$('#precision_neg').text((cm.precision_neg * 100).toPrecision(4) + '%');
+				$('#recall_pos').text((cm.recall_pos * 100).toPrecision(4) + '%');
+				$('#recall_neg').text((cm.recall_neg * 100).toPrecision(4) + '%');
 				$('#loader').css('visibility', 'hidden');
 			},
 			error: function(e) {
@@ -122,6 +196,7 @@
 				$('#loader').css('visibility', 'visible');
 			},
 			success: function(response) {
+				console.log(response);
 				var json = $.parseJSON(response);
 				nbga = json.fittest_chromosomes[json.fittest_chromosomes.length - 1].fitness * 100;
 				display_bar_chart(nb, nbga);
@@ -134,6 +209,21 @@
 				}
 				display_line_chart(data, labels);
 
+				$('#optimized_precision_pos').text((json.fittest_chromosomes[json.fittest_chromosomes.length - 1].cm.precision_pos * 100).toPrecision(4) + '%');
+				$('#optimized_precision_neg').text((json.fittest_chromosomes[json.fittest_chromosomes.length - 1].cm.precision_neg * 100).toPrecision(4) + '%');
+				$('#optimized_recall_pos').text((json.fittest_chromosomes[json.fittest_chromosomes.length - 1].cm.recall_pos * 100).toPrecision(4) + '%');
+				$('#optimized_recall_neg').text((json.fittest_chromosomes[json.fittest_chromosomes.length - 1].cm.recall_neg * 100).toPrecision(4) + '%');
+
+				var allele = json.allele;
+				var attr_html = '';
+				for (var i = 0; i < allele.length; i++) {
+					attr_html += '<tr>';
+					attr_html += '<td>' + (i + 1) + '</td>';
+					attr_html += '<td>' + allele[i].name + '</td>';
+					attr_html += '</tr>';
+				}
+
+				$('#selected_attribute').html(attr_html);
 				$('#loader').css('visibility', 'hidden');
 			},
 			error: function(e) {
