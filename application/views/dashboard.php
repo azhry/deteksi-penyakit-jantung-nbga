@@ -2,7 +2,7 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron">
-				<h2>Kelompok Klasifikasi</h2>
+				<h2>ETL</h2>
 			</div>
 
 			<div class="row">
